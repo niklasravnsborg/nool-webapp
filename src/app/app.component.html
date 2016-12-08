@@ -1,3 +1,52 @@
-<h1>
-  {{title}}
-</h1>
+<div ng-controller="loginCtrl" *ngIf="!loggedIn">
+  <form ng-submit="login()">
+    <label class="item item-input">
+      <span class="input-label">Email</span>
+      <input type="text" name="email" [(ngModel)]="user.email">
+    </label>
+    <label class="item item-input">
+      <span class="input-label">Password</span>
+      <input type="password" name="password" [(ngModel)]="user.password">
+    </label>
+    <button type="button" (click)="login(l)">Login</button>
+
+  </form>
+</div>
+
+<div *ngIf="loggedIn">
+  Importieren: <input type="file"
+       ngFileSelect
+       [options]="options"
+       (onUpload)="handleUpload($event)"
+       (beforeUpload)="beforeUpload($event)">
+
+  <table>
+    <thead>
+      <tr>
+        <th>Datum</th>
+        <th>Stunde</th>
+        <th>Kurs</th>
+        <th>Optionen</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of items | async">
+        <td>{{ item.date }}</td>
+        <td>{{ item.lesson }}</td>
+        <td>{{ item.course }}</td>
+        <td><button (click)="removeItem(this.item.$key)">Löschen</button></td>
+      </tr>
+      <tr>
+        <th></th>
+        <th></th>
+        <th><input placeholder="Kursnummer" type="text" [(ngModel)]="newItem"></th>
+        <th><button (click)="addItem()">Hinzufügen</button></th>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- <span ng-show="loginObj.user">
+    {{loginObj.user.email}} | <a href="#" ng-click="loginObj.$logout()">Logout</a>
+  </span> -->
+
+</div>
