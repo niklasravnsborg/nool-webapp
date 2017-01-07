@@ -23,6 +23,15 @@ export class AppComponent {
   };
   sizeLimit = 2000000;
 
+  ngOnInit() {
+    this.auth.subscribe((user) => {
+      if (user) {
+        this.items = this.af.database.list('/messages');
+        this.loggedIn = true;
+      }
+    });
+  }
+
   handleUpload(data): void {
     if (data && data.response) {
       data = JSON.parse(data.response);
