@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { AngularFire, FirebaseListObservable, AuthProviders, AuthMethods, FirebaseAuth } from 'angularfire2';
 import { Ng2UploaderModule } from 'ng2-uploader';
+import {Observable} from 'rxjs/Observable';
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-root',
@@ -12,6 +14,8 @@ export class AppComponent {
   constructor(public auth: FirebaseAuth, public af: AngularFire) { }
 
   items: FirebaseListObservable<any[]>;
+  itemsPretty: Observable<any[]>;
+  dates: Observable<any[]>;
   user = {email: '', password: ''};
   newItem = '';
   loggedIn = false;
@@ -24,8 +28,53 @@ export class AppComponent {
   sizeLimit = 2000000;
 
   ngOnInit() {
+
     this.auth.subscribe((user) => {
       if (user) {
+
+        this.dates = new Observable(observer => {
+
+          var dates = [];
+
+          this.af.database.list('/messages', { preserveSnapshot: true }).subscribe(messages => {
+
+            messages.forEach(message => {
+
+              var date = moment(message.val()['date']).format('DD.MM.YYYY');
+
+              if (dates.indexOf(date) === -1) {
+                dates.push(date);
+              }
+
+            });
+            observer.next(dates);
+
+          });
+        });
+
+
+
+        this.itemsPretty = new Observable(observer => {
+
+          this.af.database.list('/messages', { preserveSnapshot: true }).subscribe(messages => {
+
+            var messagesArray = [];
+
+            messages.forEach(message => {
+              var date = moment(message.val()['date']).format('DD.MM.YYYY');
+              var object = message.val();
+              object['prettyDate'] = date;
+              object['$key'] = message.key;
+              messagesArray.push(object);
+
+            });
+
+            observer.next(messagesArray);
+
+          });
+
+        });
+
         this.items = this.af.database.list('/messages');
         this.loggedIn = true;
       }
