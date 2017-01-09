@@ -19,6 +19,7 @@ export class AppComponent {
   user = {email: '', password: ''};
   newItem = '';
   loggedIn = false;
+  currentDate = '';
 
   uploadFile: any;
   hasBaseDropZoneOver: boolean = false;
@@ -45,6 +46,8 @@ export class AppComponent {
               if (dates.indexOf(date) === -1) {
                 dates.push(date);
               }
+
+              this.currentDate = date;
 
             });
             observer.next(dates);
@@ -79,6 +82,10 @@ export class AppComponent {
         this.loggedIn = true;
       }
     });
+  }
+
+  clickUpload() {
+    document.getElementById('file-import').click()
   }
 
   handleUpload(data): void {

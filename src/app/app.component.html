@@ -1,4 +1,17 @@
-<div ng-controller="loginCtrl" *ngIf="!loggedIn">
+<section class="hero is-primary" style="margin-bottom: 2em;">
+  <div class="hero-body">
+    <div class="container">
+      <h1 class="title">
+        Nool
+      </h1>
+      <h2 class="subtitle">
+        Adminkonsole
+      </h2>
+    </div>
+  </div>
+</section>
+
+<div class="container" ng-controller="loginCtrl" *ngIf="!loggedIn">
   <form ng-submit="login()">
     <label class="item item-input">
       <span class="input-label">Email</span>
@@ -9,43 +22,77 @@
       <input type="password" name="password" [(ngModel)]="user.password">
     </label>
     <button type="button" (click)="login(l)">Login</button>
-
   </form>
 </div>
 
-<div *ngIf="loggedIn">
-  Importieren: <input type="file"
-       ngFileSelect
-       [options]="options"
-       (onUpload)="handleUpload($event)"
-       (beforeUpload)="beforeUpload($event)">
-
-  <div *ngFor="let date of dates | async">
-    <h2>{{ date }}</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Stunde</th>
-          <th>Kurs</th>
-          <th>Optionen</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let item of itemsPretty | async" >
-          <ng-container *ngIf="item.prettyDate == date">
-            <td>{{ item.lesson }}</td>
-            <td>{{ item.course }}</td>
-            <td><button (click)="removeItem(this.item.$key)">Löschen</button></td>
+<div class="container" *ngIf="loggedIn">
+  <div class="columns">
+    <div class="column is-one-quarter">
+      <nav class="panel">
+        <p class="panel-heading">
+          Datum filtern
+        </p>
+        <ng-container *ngFor="let date of dates | async">
+          <ng-container *ngIf="date === currentDate">
+            <a class="panel-block is-active" href="#" (click)="currentDate = date">
+              <span class="panel-icon">
+                <i class="fa fa-calendar"></i>
+              </span>
+              {{ date }}
+            </a>
           </ng-container>
-        </tr>
-        <tr>
-          <th></th>
-          <th><input placeholder="Kursnummer" type="text" [(ngModel)]="newItem"></th>
-          <th><button (click)="addItem()">Hinzufügen</button></th>
-        </tr>
-      </tbody>
-    </table>
+          <ng-container *ngIf="date !== currentDate">
+            <a class="panel-block" href="#" (click)="currentDate = date">
+              <span class="panel-icon"></span>
+              {{ date }}
+            </a>
+          </ng-container>
+        </ng-container>
+      </nav>
+    </div>
+    <div class="column">
+      <div class="level">
+        <!-- <div class="level-left">
+
+          <div class="control has-addons">
+            <input class="input" placeholder="Kursnummer" type="text" [(ngModel)]="newItem">
+            <button class="button is-primary" (click)="addItem()">Hinzufügen</button>
+          </div>
+
+        </div> -->
+        <div class="level-right">
+
+          <button class="button" (click)="clickUpload()">
+            <span class="icon is-small"><i class="fa fa-upload"></i></span>
+            <span>Importieren</span>
+          </button>
+          <input id="file-import" type="file" ngFileSelect [options]="options" (onUpload)="handleUpload($event)" (beforeUpload)="beforeUpload($event)" style="display: none;">
+
+        </div>
+      </div>
+      <div *ngFor="let date of dates | async">
+        <div class="content" *ngIf="currentDate === date">
+          <h2 class="title">{{ date }}</h2>
+          <ng-container *ngFor="let item of itemsPretty | async" >
+            <div class="box" *ngIf="item.prettyDate == date">
+              <div class="level">
+                <div class="level-left">
+                  {{ item.lesson }}. Stunde: <b>{{ item.course }}</b>
+                </div>
+                <div class="level-right">
+                  <button class="button is-small is-danger is-outlined" (click)="removeItem(this.item.$key)">Löschen</button>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </div>
   </div>
+
+
+
+
 
 
 
