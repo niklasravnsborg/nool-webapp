@@ -32,7 +32,7 @@
         <p class="panel-heading">
           Datum filtern
         </p>
-        <ng-container *ngFor="let date of dates | async">
+        <ng-container *ngFor="let date of dates">
           <ng-container *ngIf="date === currentDate">
             <a class="panel-block is-active" href="#" (click)="currentDate = date">
               <span class="panel-icon">
@@ -70,10 +70,10 @@
 
         </div>
       </div>
-      <div *ngFor="let date of dates | async">
+      <div *ngFor="let date of dates">
         <div class="content" *ngIf="currentDate === date">
           <h2 class="title">{{ date }}</h2>
-          <ng-container *ngFor="let item of itemsPretty | async" >
+          <ng-container *ngFor="let item of itemsPretty" >
             <div class="box" *ngIf="item.prettyDate == date">
               <div class="level">
                 <div class="level-left">

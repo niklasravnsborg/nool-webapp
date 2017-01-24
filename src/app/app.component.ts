@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { AngularFire, FirebaseListObservable, AuthProviders, AuthMethods, FirebaseAuth } from 'angularfire2';
 import { Ng2UploaderModule } from 'ng2-uploader';
 import {Observable} from 'rxjs/Observable';
+import 'rxjs/add/operator/take'
 import * as moment from 'moment';
 
 @Component({
@@ -14,8 +15,8 @@ export class AppComponent {
   constructor(public auth: FirebaseAuth, public af: AngularFire) { }
 
   items: FirebaseListObservable<any[]>;
-  itemsPretty: Observable<any[]>;
-  dates: Observable<any[]>;
+  itemsPretty = [];
+  dates = [];
   user = {email: '', password: ''};
   newItem = '';
   loggedIn = false;
@@ -33,53 +34,37 @@ export class AppComponent {
     this.auth.subscribe((user) => {
       if (user) {
 
-        this.dates = new Observable(observer => {
+        this.af.database.list('/messages', { preserveSnapshot: true }).subscribe(messages => {
 
-          var dates = [];
+          var itemsPretty = [],
+              dates = [];
 
-          this.af.database.list('/messages', { preserveSnapshot: true }).subscribe(messages => {
+          messages.forEach(message => {
 
-            messages.forEach(message => {
+            var object = message.val(),
+                date   = moment(message.val()['date']).format('DD.MM.YYYY');
 
-              var date = moment(message.val()['date']).format('DD.MM.YYYY');
+            object['prettyDate'] = date;
+            object['$key'] = message.key;
 
-              if (dates.indexOf(date) === -1) {
-                dates.push(date);
-              }
+            itemsPretty.push(object);
 
-              this.currentDate = date;
+            if (dates.indexOf(date) === -1) {
+              dates.push(date);
+            }
 
-            });
-            observer.next(dates);
-
-          });
-        });
-
-
-
-        this.itemsPretty = new Observable(observer => {
-
-          this.af.database.list('/messages', { preserveSnapshot: true }).subscribe(messages => {
-
-            var messagesArray = [];
-
-            messages.forEach(message => {
-              var date = moment(message.val()['date']).format('DD.MM.YYYY');
-              var object = message.val();
-              object['prettyDate'] = date;
-              object['$key'] = message.key;
-              messagesArray.push(object);
-
-            });
-
-            observer.next(messagesArray);
+            this.currentDate = date;
 
           });
+
+          this.itemsPretty = itemsPretty;
+          this.dates = dates;
 
         });
 
         this.items = this.af.database.list('/messages');
         this.loggedIn = true;
+
       }
     });
   }
@@ -92,9 +77,30 @@ export class AppComponent {
     if (data && data.response) {
       data = JSON.parse(data.response);
       this.uploadFile = data;
-      for (let message of data) {
-        this.items.push(message);
-      }
+
+      this.af.database.list('/messages').take(1).subscribe((messages) => {
+        // this logic handles that a message can only be imported and exist once
+        messages.forEach((message) => {
+          data.forEach((newMessage, i) => {
+            if (
+              newMessage.course === message.course &&
+              newMessage.date   === message.date &&
+              newMessage.lesson === message.lesson &&
+              newMessage.type   === message.type
+            ) {
+              // delete data from the importing array if this message exists already
+              data.splice(i, 1);
+            }
+          });
+        });
+
+        // import / push the remaining data to the realtime db
+        data.forEach(message => {
+          this.items.push(message);
+          // console.log(message);
+        });
+
+      });
 
     }
   }
