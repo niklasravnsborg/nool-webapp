@@ -77,7 +77,8 @@
             <div class="box" *ngIf="item.prettyDate == date">
               <div class="level">
                 <div class="level-left">
-                  {{ item.lesson }}. Stunde: <b>{{ item.course }}</b>
+                  <div class="level-item">{{ item.lesson }}. Stunde: <b>{{ item.course }}</b></div>
+                  <div class="level-item" *ngIf="item.teacher"><span class="tag">{{ item.teacher }}</span></div>
                 </div>
                 <div class="level-right">
                   <button class="button is-small is-danger is-outlined" (click)="removeItem(this.item.$key)">Löschen</button>

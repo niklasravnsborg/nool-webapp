@@ -16,6 +16,7 @@ export class AppComponent {
 
   items: FirebaseListObservable<any[]>;
   itemsPretty = [];
+  courses = [];
   dates = [];
   user = {email: '', password: ''};
   newItem = '';
@@ -34,6 +35,10 @@ export class AppComponent {
     this.auth.subscribe((user) => {
       if (user) {
 
+        this.af.database.object(`/courses`).subscribe(courses => {
+          this.courses = courses;
+        });
+
         this.af.database.list('/messages', { preserveSnapshot: true }).subscribe(messages => {
 
           var itemsPretty = [],
@@ -41,11 +46,17 @@ export class AppComponent {
 
           messages.forEach(message => {
 
-            var object = message.val(),
-                date   = moment(message.val()['date']).format('DD.MM.YYYY');
+            var object  = message.val(),
+                date    = moment(message.val()['date']).format('DD.MM.YYYY'),
+                teacher;
 
-            object['prettyDate'] = date;
+            if (this.courses[object.course]) {
+              teacher = this.courses[object.course]['teacher'];
+            }
+
             object['$key'] = message.key;
+            object['prettyDate'] = date;
+            object['teacher'] = teacher;
 
             itemsPretty.push(object);
 
@@ -94,10 +105,15 @@ export class AppComponent {
           });
         });
 
-        // import / push the remaining data to the realtime db
+
         data.forEach(message => {
+
+          // import / push the remaining data to the realtime db
           this.items.push(message);
-          // console.log(message);
+
+          // set course and teacher
+          this.af.database.object(`/courses/${message.course}`).set({'teacher': message.teacher});
+
         });
 
       });
